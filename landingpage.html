@@ -1,0 +1,174 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>
+        Intro to SceneView - Create a 3D map | Sample | ArcGIS Maps SDK for JavaScript 4.27
+    </title>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #messageDiv {
+            position: absolute;
+            bottom: 25px;
+            left: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 18px;
+            animation: fade 1s ease-in-out;
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.27/"></script>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/WebScene",
+            "esri/views/SceneView",
+            "esri/geometry/Extent"
+        ], function (Map, WebScene, SceneView, Extent) {
+            // Create a new WebScene
+            var webscene = new WebScene({
+                portalItem: {
+                    id: "b9d2c0e43f604f6daaaa29ffdeb71f32" // WebScene item ID
+                }
+            });
+
+            const view = new SceneView({
+                container: "viewDiv",
+                map: webscene,
+                scale: 50000000,
+                center: [-101.17, 21.78]
+            });
+
+            function zoomToLocation() {
+                const steps = [
+                    {
+                        extent: {
+                            xmin: -180,
+                            ymin: -90,
+                            xmax: 180,
+                            ymax: 90,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        action: "zoom",
+                        message: "Welcome to Rain Forest"
+                    },
+                    {
+                        extent: {
+                            xmin: -88.073697,
+                            ymin: 6.795680,
+                            xmax: -78.672921,
+                            ymax: 13.431394,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        action: "zoom",
+                        message: "Costa Rica"
+                    },
+                    {
+                        extent: {
+                            xmin: -84.580045,
+                            ymin: 9.362497,
+                            xmax: -82.606026,
+                            ymax: 10.959086,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        action: "zoom",
+                        message: "San Jose"
+                    },
+                    {
+                        center: [-83.747590, 10.559423], // Project Pan
+                        action: "goToXY",
+                        message: "Project Location"
+                    },
+                    {
+                        extent: {
+                            xmin: -83.774082,
+                            ymin: 10.538341,
+                            xmax: -83.705563,
+                            ymax: 10.579238,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        action: "zoom",
+                        message: "Project Location Sponsors"
+                    },
+
+
+                ];
+
+                let stepIndex = 0;
+
+                const messageDiv = document.createElement("div");
+                messageDiv.id = "messageDiv";
+                document.body.appendChild(messageDiv);
+
+                function performStep() {
+                    const step = steps[stepIndex];
+                    const { extent, action, message, center } = step;
+                    messageDiv.textContent = message;
+                    messageDiv.style.animationPlayState = "running";
+
+                    const options = {
+                        speedFactor: 0.1,
+                        easing: "out-quint"
+                    };
+
+                    if (action === "zoom") {
+                        options.target = new Extent(extent);
+                    } else if (action === "pan") {
+                        options.target = new Extent(extent);
+                        options.zoom = view.zoom;
+                    } else if (action === "goToXY") {
+                        options.target = center;
+                        options.zoom = view.zoom;
+                    }
+
+                    view.goTo(options).then(() => {
+                        stepIndex++;
+                        if (stepIndex < steps.length) {
+                            setTimeout(performStep, 2000);
+                        }
+                    });
+                }
+
+                performStep();
+            }
+
+
+            view.when(() => {
+                // Wait for the view to be ready
+                setTimeout(() => {
+                    zoomToLocation();
+                }, 2000);
+            });
+        });
+    </script>
+
+</head>
+
+<body>
+    <div id="viewDiv"></div>
+</body>
+
+</html>
