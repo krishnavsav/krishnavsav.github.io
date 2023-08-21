@@ -111,7 +111,8 @@
                             spatialReference: { wkid: 4326 }
                         },
                         action: "zoom",
-                        message: "Project Location Sponsors"
+                        message: "Project Location Sponsors",
+                        delay: 5000 // Delay for 3 seconds
                     },
 
 
@@ -124,8 +125,8 @@
                 document.body.appendChild(messageDiv);
 
                 function performStep() {
-                    const step = steps[stepIndex];
-                    const { extent, action, message, center } = step;
+                    const step = steps[stepIndex % steps.length];
+                    const { extent, action, message, center, delay } = step;
                     messageDiv.textContent = message;
                     messageDiv.style.animationPlayState = "running";
 
@@ -146,11 +147,10 @@
 
                     view.goTo(options).then(() => {
                         stepIndex++;
-                        if (stepIndex < steps.length) {
-                            setTimeout(performStep, 2000);
-                        }
+                        setTimeout(performStep, delay || 2000); // Use the delay from the step or default to 2 seconds
                     });
                 }
+
 
                 performStep();
             }
