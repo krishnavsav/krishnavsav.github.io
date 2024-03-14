@@ -112,8 +112,6 @@
                 }
             });
 
-
-
             const view = new SceneView({
                 container: "viewDiv",
                 map: webscene,
@@ -132,7 +130,7 @@
                             spatialReference: { wkid: 4326 }
                         },
                         action: "zoom",
-                        message: "Welcome to Rain Forest",
+                        message: "Welcome to Elzota",
                         delay: 1000 // Delay for 3 seconds
                     },
                     {
@@ -165,7 +163,19 @@
                             spatialReference: { wkid: 4326 }
                         },
                         action: "zoom",
-                        message: "El Zota Projects",
+                        message: "Limon Region",
+                        delay: 5000 // Delay for 3 seconds
+                    },
+                    {
+                        extent: {
+                            xmin: -83.759692,
+                            ymin: 10.551344,
+                            xmax: -83.732462,
+                            ymax: 10.568462,
+                            spatialReference: { wkid: 4326 }
+                        },
+                        action: "zoom",
+                        message: "Elzota Project",
                         delay: 5000 // Delay for 3 seconds
                     },
 
@@ -216,7 +226,7 @@
                             return;
                         }
                         stepIndex++;
-                        setTimeout(performStep, delay || 2000);
+                        setTimeout(performStep, del00ay || 2000);
                     });
                 }
 
