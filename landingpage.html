@@ -82,10 +82,30 @@
             background-color: #45a049;
             /* Darker green on hover */
         }
+
+        #loadingOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            /* Semi-transparent white background */
+            z-index: 1000;
+            /* Ensure it's above everything else */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        #loadingOverlay div {
+            /* Additional styling for the loading message or spinner */
+        }
     </style>
 
-    <link rel="stylesheet" href="https://js.arcgis.com/4.27/esri/themes/light/main.css" />
-    <script src="https://js.arcgis.com/4.27/"></script>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
 
 </head>
 
@@ -95,6 +115,51 @@
 
 
 <body>
+    <div id="loadingOverlay">
+        <div><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+                <circle cx="12" cy="2" r="0" fill="#a10852">
+                    <animate attributeName="r" begin="0" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(45 12 12)">
+                    <animate attributeName="r" begin="0.125s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(90 12 12)">
+                    <animate attributeName="r" begin="0.25s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(135 12 12)">
+                    <animate attributeName="r" begin="0.375s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(180 12 12)">
+                    <animate attributeName="r" begin="0.5s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(225 12 12)">
+                    <animate attributeName="r" begin="0.625s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(270 12 12)">
+                    <animate attributeName="r" begin="0.75s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+                <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(315 12 12)">
+                    <animate attributeName="r" begin="0.875s" calcMode="spline" dur="1s"
+                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
+                        values="0;2;0;0" />
+                </circle>
+            </svg></div>
+    </div>
+
     <div id="viewDiv"></div>
 
 
@@ -243,9 +308,22 @@
             }
 
             view.when(() => {
-                setTimeout(() => {
-                    zoomToLocation();
-                }, 2000);
+                var loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = 'none'; // Hide the overlay
+                }
+                // Check if the basemap is loaded
+                if (view.map.basemap.loaded) {
+                    // If the basemap is already loaded, start zooming to location
+                    setTimeout(zoomToLocation, 2000);
+                } else {
+                    // Wait for the basemap to load before starting the zoom-to-location
+                    view.map.basemap.watch('loaded', function (isLoaded) {
+                        if (isLoaded) {
+                            setTimeout(zoomToLocation, 2000);
+                        }
+                    });
+                }
             });
         });
     </script>
