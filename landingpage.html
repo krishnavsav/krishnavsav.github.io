@@ -7,9 +7,8 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
-    <title>
-        Welcome to Rain Forest
-    </title>
+    <title>Welcome to Rain Forest</title>
+
     <style>
         html,
         body,
@@ -24,320 +23,217 @@
             position: absolute;
             bottom: 25px;
             left: 10px;
-            background-color: rgba(0, 123, 255, 0.8);
-            /* Blue background */
-            color: white;
-            /* White text */
+            background: rgba(0, 123, 255, .8);
+            color: #fff;
             padding: 12px 20px;
             border-radius: 8px;
             font-size: 18px;
-            animation: fade 1s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            /* Shadow effect */
-            transition: background-color 0.3s ease;
-            /* Smooth transition for hover effect */
+            animation: fade .4s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .2);
+            transition: background-color .3s ease;
         }
 
         #messageDiv:hover {
-            background-color: rgba(0, 96, 200, 0.8);
-            /* Darker blue on hover */
+            background: rgba(0, 96, 200, .8);
         }
 
         @keyframes fade {
             0% {
-                opacity: 0;
+                opacity: 0
             }
 
             100% {
-                opacity: 1;
+                opacity: 1
             }
-        }
-
-
-        #controlDiv {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            font-size: 18px;
-        }
-
-        #controlDiv button {
-            cursor: pointer;
-            background-color: #4CAF50;
-            /* Green background */
-            border: none;
-            color: white;
-            padding: 8px 16px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 18px;
-            margin: 4px 2px;
-            transition-duration: 0.4s;
-            border-radius: 4px;
-        }
-
-        #controlDiv button:hover {
-            background-color: #45a049;
-            /* Darker green on hover */
         }
 
         #loadingOverlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8);
-            /* Semi-transparent white background */
+            inset: 0;
+            background: rgba(255, 255, 255, .8);
             z-index: 1000;
-            /* Ensure it's above everything else */
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 24px;
         }
 
-        #loadingOverlay div {
-            /* Additional styling for the loading message or spinner */
+        /* Green Play/Pause button */
+        .tour-ctrl {
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+        }
+
+        .tour-ctrl button {
+            cursor: pointer;
+            background: #22c55e;
+            /* green */
+            border: none;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: .2s;
+        }
+
+        .tour-ctrl button:hover {
+            filter: brightness(0.95);
+        }
+
+        .tour-ctrl button:disabled {
+            opacity: .6;
+            cursor: not-allowed;
         }
     </style>
 
     <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
     <script src="https://js.arcgis.com/4.29/"></script>
-
 </head>
-
-
-
-
-
 
 <body>
     <div id="loadingOverlay">
-        <div><svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+        <div>
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
                 <circle cx="12" cy="2" r="0" fill="#a10852">
-                    <animate attributeName="r" begin="0" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(45 12 12)">
-                    <animate attributeName="r" begin="0.125s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.125s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(90 12 12)">
-                    <animate attributeName="r" begin="0.25s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.25s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(135 12 12)">
-                    <animate attributeName="r" begin="0.375s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.375s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(180 12 12)">
-                    <animate attributeName="r" begin="0.5s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.5s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(225 12 12)">
-                    <animate attributeName="r" begin="0.625s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.625s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(270 12 12)">
-                    <animate attributeName="r" begin="0.75s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.75s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
                 <circle cx="12" cy="2" r="0" fill="#a10852" transform="rotate(315 12 12)">
-                    <animate attributeName="r" begin="0.875s" calcMode="spline" dur="1s"
-                        keySplines="0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8;0.2 0.2 0.4 0.8" repeatCount="indefinite"
-                        values="0;2;0;0" />
+                    <animate attributeName="r" begin="0.875s" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
                 </circle>
-            </svg></div>
+            </svg>
+        </div>
     </div>
 
     <div id="viewDiv"></div>
 
-
     <script>
         require([
-            "esri/Map",
             "esri/WebScene",
             "esri/views/SceneView",
-            "esri/geometry/Extent"
-        ], function (Map, WebScene, SceneView, Extent) {
-            // Create a new WebScene
-            var webscene = new WebScene({
-                portalItem: {
-                    id: "b9d2c0e43f604f6daaaa29ffdeb71f32" // WebScene item ID
-                }
+            "esri/widgets/Bookmarks",
+            "esri/core/reactiveUtils"
+        ], function (WebScene, SceneView, Bookmarks, reactiveUtils) {
+
+            const scene = new WebScene({
+                portalItem: { id: "b9d2c0e43f604f6daaaa29ffdeb71f32" }
             });
 
-            const view = new SceneView({
-                container: "viewDiv",
-                map: webscene,
-                scale: 50000000,
-                center: [-101.17, 21.78]
-            });
+            const view = new SceneView({ container: "viewDiv", map: scene });
 
-            function zoomToLocation() {
-                const steps = [
-                    {
-                        extent: {
-                            xmin: -180,
-                            ymin: -90,
-                            xmax: 180,
-                            ymax: 90,
-                            spatialReference: { wkid: 4326 }
-                        },
-                        action: "zoom",
-                        message: "Welcome to El Zota",
-                        delay: 1000 // Delay for 3 seconds
-                    },
-                    {
-                        extent: {
-                            xmin: -99.032196, xmax: -75.477508, ymin: 3.240683, ymax: 17.488290,
-                            spatialReference: { wkid: 4326 }
-                        },
-                        action: "zoom",
-                        message: "Costa Rica"
-                    },
-                    {
-                        extent: {
-                            xmin: -84.322049, xmax: -83.244015, ymin: 9.742685, ymax: 10.364020,
-                            spatialReference: { wkid: 4326 }
-                        },
-                        action: "zoom",
-                        message: "San Jose"
-                    },
-                    // {
-                    //     center: [-83.747590, 10.559423], // Project Pan
-                    //     action: "goToXY",
-                    //     message: "Project Location"
-                    // },
-                    {
-                        extent: {
-                            xmin: -83.759692,
-                            ymin: 10.551344,
-                            xmax: -83.732462,
-                            ymax: 10.568462,
-                            spatialReference: { wkid: 4326 }
-                        },
-                        action: "zoom",
-                        message: "Limon Region",
-                        delay: 5000 // Delay for 3 seconds
-                    },
-                    {
-                        extent: {
-                            xmin: -83.759692,
-                            ymin: 10.551344,
-                            xmax: -83.732462,
-                            ymax: 10.568462,
-                            spatialReference: { wkid: 4326 }
-                        },
-                        action: "zoom",
-                        message: "El Zota Project",
-                        delay: 5000 // Delay for 3 seconds
-                    },
-                    {
-                    extent: {
-                        xmin: -9322629.3300,
-                        ymin: 1181380.0600,
-                        xmax: -9322135.7700,
-                        ymax: 1181648.1900,
-                        spatialReference: { wkid: 102100 }
-                    },
-                    action: "zoom",
-                    message: "El Zota Project Tiles",
-                    delay: 5000 // Optional: how long to show before animation stops
-                }
-                ];
-
-                let stepIndex = 0;
-                let isPaused = false;
-
-                const messageDiv = document.createElement("div");
-                messageDiv.id = "messageDiv";
-                document.body.appendChild(messageDiv);
-
-                const controlDiv = document.createElement("div");
-                controlDiv.id = "controlDiv";
-                const playPauseButton = document.createElement("button");
-                playPauseButton.textContent = "Pause";
-                controlDiv.appendChild(playPauseButton);
-                view.ui.add(controlDiv, "top-right");
-
-                function performStep() {
-                    if (isPaused) return;
-
-                    const step = steps[stepIndex % steps.length];
-                    const { extent, action, message, center, delay } = step;
-                    messageDiv.textContent = message;
-                    messageDiv.style.animationPlayState = "running";
-
-                    const options = {
-                        speedFactor: 0.1,
-                        easing: "out-quint"
-                    };
-
-                    if (action === "zoom") {
-                        options.target = new Extent(extent);
-                    } else if (action === "pan") {
-                        options.target = new Extent(extent);
-                        options.zoom = view.zoom;
-                    } else if (action === "goToXY") {
-                        options.target = center;
-                        options.zoom = view.zoom;
-                    }
-
-                    view.goTo(options).then(() => {
-                        if (stepIndex >= steps.length - 1) {
-                            isPaused = true;
-                            playPauseButton.textContent = "Play";
-                            return;
-                        }
-                        stepIndex++;
-                        setTimeout(performStep, delay || 2000);
-                    });
-                }
-
-                playPauseButton.addEventListener("click", () => {
-                    isPaused = !isPaused;
-                    playPauseButton.textContent = isPaused ? "Play" : "Pause";
-                    if (!isPaused) {
-                        stepIndex = 0; // Reset the steps when Play is clicked
-                        performStep();
-                    }
-                });
-
-                performStep(); // Start the zoom-to-location behavior immediately
-            }
+            // (Optional) Bookmarks widget (WebScene uses slides)
+            const bookmarks = new Bookmarks({ view });
+            // view.ui.add(bookmarks, "top-right");
 
             view.when(() => {
-                var loadingOverlay = document.getElementById('loadingOverlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none'; // Hide the overlay
-                }
-                // Check if the basemap is loaded
-                if (view.map.basemap.loaded) {
-                    // If the basemap is already loaded, start zooming to location
-                    setTimeout(zoomToLocation, 2000);
+                const overlay = document.getElementById("loadingOverlay");
+                if (overlay) overlay.style.display = "none";
+            });
+
+            // === Slide auto-play config ===
+            let playing = false;
+            const loop = false;    // pause at end
+            const dwellMs = 3000;  // wait time on slide
+            const animMs = 2500;  // camera animation
+            let i = 0;
+
+            // Controls
+            const ctrl = document.createElement("div");
+            ctrl.className = "tour-ctrl";
+            const btn = document.createElement("button");
+            btn.textContent = "Play tour";
+            ctrl.appendChild(btn);
+            view.ui.add(ctrl, "top-right");
+
+            btn.addEventListener("click", () => {
+                if (!playing) {
+                    playing = true;
+                    btn.textContent = "Pause tour";
+                    playSlides();
                 } else {
-                    // Wait for the basemap to load before starting the zoom-to-location
-                    view.map.basemap.watch('loaded', function (isLoaded) {
-                        if (isLoaded) {
-                            setTimeout(zoomToLocation, 2000);
-                        }
-                    });
+                    // manual pause
+                    playing = false;
+                    btn.textContent = "Play tour";
                 }
             });
+
+            async function ensureSlidesReady() {
+                await scene.when();
+                await reactiveUtils.whenOnce(() => {
+                    const s = scene.presentation?.slides;
+                    return s && s.length > 0;
+                });
+                return scene.presentation.slides;
+            }
+
+            async function playSlides() {
+                const slides = await ensureSlidesReady();
+                if (!slides || slides.length === 0) {
+                    showMessage("No slides found in this scene.");
+                    playing = false;
+                    btn.textContent = "Play tour";
+                    return;
+                }
+
+                // If we reached the end previously, start from beginning
+                if (i >= slides.length) i = 0;
+
+                while (playing && i < slides.length) {
+                    const slide = slides.getItemAt(i);
+                    await slide.applyTo(view, { animate: true, duration: animMs });
+                    showMessage(slide.title?.text || `Slide ${i + 1}`);
+                    await delay(dwellMs);
+                    i++;
+                }
+
+                // Stop at end (no looping)
+                if (!loop && i >= slides.length) {
+                    playing = false;
+                    btn.textContent = "Play tour";
+                }
+            }
+
+            function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+            function showMessage(text) {
+                let msg = document.getElementById("messageDiv");
+                if (!msg) {
+                    msg = document.createElement("div");
+                    msg.id = "messageDiv";
+                    document.body.appendChild(msg);
+                }
+                msg.textContent = text;
+            }
+
+            // === AUTO-START: kick off tour once slides are ready ===
+            (async () => {
+                const slides = await ensureSlidesReady();
+                if (slides && slides.length > 0) {
+                    playing = true;
+                    btn.textContent = "Pause tour";
+                    playSlides();
+                }
+            })();
+
         });
     </script>
 </body>
