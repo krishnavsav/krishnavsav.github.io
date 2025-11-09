@@ -9,6 +9,9 @@
     <meta http-equiv="Expires" content="0" />
     <title>Welcome to Rain Forest</title>
 
+    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.29/"></script>
+
     <style>
         html,
         body,
@@ -17,34 +20,6 @@
             margin: 0;
             height: 100%;
             width: 100%;
-        }
-
-        #messageDiv {
-            position: absolute;
-            bottom: 25px;
-            left: 10px;
-            background: rgba(0, 123, 255, .8);
-            color: #fff;
-            padding: 12px 20px;
-            border-radius: 8px;
-            font-size: 18px;
-            animation: fade .4s ease-in-out;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, .2);
-            transition: background-color .3s ease;
-        }
-
-        #messageDiv:hover {
-            background: rgba(0, 96, 200, .8);
-        }
-
-        @keyframes fade {
-            0% {
-                opacity: 0
-            }
-
-            100% {
-                opacity: 1
-            }
         }
 
         #loadingOverlay {
@@ -58,7 +33,40 @@
             font-size: 24px;
         }
 
-        /* Green Play/Pause button */
+        /* Toast with the slide TITLE only */
+        #messageDiv {
+            position: absolute;
+            bottom: 25px;
+            left: 10px;
+            background: rgba(0, 123, 255, .85);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            animation: fade .4s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, .2);
+            transition: background-color .3s ease;
+            max-width: 420px;
+            line-height: 1.3;
+            white-space: normal;
+            /* allow wrapping for long titles */
+        }
+
+        #messageDiv:hover {
+            background: rgba(0, 96, 200, .85);
+        }
+
+        @keyframes fade {
+            0% {
+                opacity: 0
+            }
+
+            100% {
+                opacity: 1
+            }
+        }
+
+        /* Play/Pause control */
         .tour-ctrl {
             padding: 8px;
             background: white;
@@ -69,7 +77,6 @@
         .tour-ctrl button {
             cursor: pointer;
             background: #22c55e;
-            /* green */
             border: none;
             color: white;
             padding: 8px 14px;
@@ -87,14 +94,12 @@
             cursor: not-allowed;
         }
     </style>
-
-    <link rel="stylesheet" href="https://js.arcgis.com/4.29/esri/themes/light/main.css" />
-    <script src="https://js.arcgis.com/4.29/"></script>
 </head>
 
 <body>
     <div id="loadingOverlay">
         <div>
+            <!-- simple spinner -->
             <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
                 <circle cx="12" cy="2" r="0" fill="#a10852">
                     <animate attributeName="r" begin="0" dur="1s" repeatCount="indefinite" values="0;2;0;0" />
@@ -134,14 +139,19 @@
             "esri/core/reactiveUtils"
         ], function (WebScene, SceneView, Bookmarks, reactiveUtils) {
 
+            // --- Global defaults if a slide has no description ---
+            const loop = false;      // don't loop by default
+            const dwellMs = 3000;    // default time to wait on each slide (ms)
+            const animMs = 2500;     // default camera flight duration (ms)
+
             const scene = new WebScene({
+                // your scene item
                 portalItem: { id: "b9d2c0e43f604f6daaaa29ffdeb71f32" }
             });
 
             const view = new SceneView({ container: "viewDiv", map: scene });
 
-            // (Optional) Bookmarks widget (WebScene uses slides)
-            const bookmarks = new Bookmarks({ view });
+            const bookmarks = new Bookmarks({ view }); // optional
             // view.ui.add(bookmarks, "top-right");
 
             view.when(() => {
@@ -149,14 +159,10 @@
                 if (overlay) overlay.style.display = "none";
             });
 
-            // === Slide auto-play config ===
+            // --- UI control ---
             let playing = false;
-            const loop = false;    // pause at end
-            const dwellMs = 3000;  // wait time on slide
-            const animMs = 2500;  // camera animation
             let i = 0;
 
-            // Controls
             const ctrl = document.createElement("div");
             ctrl.className = "tour-ctrl";
             const btn = document.createElement("button");
@@ -170,11 +176,62 @@
                     btn.textContent = "Pause tour";
                     playSlides();
                 } else {
-                    // manual pause
                     playing = false;
                     btn.textContent = "Play tour";
                 }
             });
+
+            // --- helpers for slides ---
+            function getTitle(slide) {
+                return slide?.title?.text ?? slide?.title ?? "";
+            }
+            function getDesc(slide) {
+                return slide?.description?.text ?? slide?.description ?? "";
+            }
+            function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+            function showMessage(text) {
+                let msg = document.getElementById("messageDiv");
+                if (!msg) {
+                    msg = document.createElement("div");
+                    msg.id = "messageDiv";
+                    document.body.appendChild(msg);
+                }
+                msg.textContent = text || "";
+            }
+
+            // Parse timing from the Description field
+            // Supports: "5000", "dwell=7000 anim=3000", "anim:2000 dwell:4500", or JSON {"dwell":6000,"anim":2000}
+            function parseTimingFromDesc(desc) {
+                if (!desc) return {};
+                const s = String(desc).trim();
+
+                // pure number => dwell
+                if (/^\d+$/.test(s)) return { dwell: parseInt(s, 10) };
+
+                // key=value or key:value
+                const kv = s.match(/dwell\s*[:=]\s*(\d+)/i);
+                const ka = s.match(/anim(?:ation)?\s*[:=]\s*(\d+)/i);
+                if (kv || ka) {
+                    return {
+                        dwell: kv ? parseInt(kv[1], 10) : undefined,
+                        anim: ka ? parseInt(ka[1], 10) : undefined
+                    };
+                }
+
+                // JSON
+                try {
+                    const j = JSON.parse(s);
+                    const d = Number(j.dwell);
+                    const a = Number(j.anim ?? j.animation);
+                    return {
+                        dwell: Number.isFinite(d) ? d : undefined,
+                        anim: Number.isFinite(a) ? a : undefined
+                    };
+                } catch {
+                    return {};
+                }
+            }
 
             async function ensureSlidesReady() {
                 await scene.when();
@@ -194,37 +251,35 @@
                     return;
                 }
 
-                // If we reached the end previously, start from beginning
                 if (i >= slides.length) i = 0;
 
                 while (playing && i < slides.length) {
                     const slide = slides.getItemAt(i);
-                    await slide.applyTo(view, { animate: true, duration: animMs });
-                    showMessage(slide.title?.text || `Slide ${i + 1}`);
-                    await delay(dwellMs);
+
+                    // Read per-slide timing from Description
+                    const { dwell, anim } = parseTimingFromDesc(getDesc(slide));
+                    const dwellForThisSlide = Number.isFinite(dwell) ? dwell : dwellMs;
+                    const animForThisSlide = Number.isFinite(anim) ? anim : animMs;
+
+                    // fly the camera
+                    await slide.applyTo(view, { animate: true, duration: animForThisSlide });
+
+                    // show only the TITLE (not the numeric description)
+                    showMessage(getTitle(slide));
+
+                    // wait
+                    await delay(dwellForThisSlide);
+
                     i++;
                 }
 
-                // Stop at end (no looping)
                 if (!loop && i >= slides.length) {
                     playing = false;
                     btn.textContent = "Play tour";
                 }
             }
 
-            function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
-
-            function showMessage(text) {
-                let msg = document.getElementById("messageDiv");
-                if (!msg) {
-                    msg = document.createElement("div");
-                    msg.id = "messageDiv";
-                    document.body.appendChild(msg);
-                }
-                msg.textContent = text;
-            }
-
-            // === AUTO-START: kick off tour once slides are ready ===
+            // Auto-start when slides are ready
             (async () => {
                 const slides = await ensureSlidesReady();
                 if (slides && slides.length > 0) {
