@@ -5,14 +5,27 @@ require([
   "esri/core/reactiveUtils"
 ], function (WebScene, SceneView, Bookmarks, reactiveUtils) {
 
+  // --- Scene item IDs ---
+  const desktopSceneId = "b9d2c0e43f604f6daaaa29ffdeb71f32";
+  const mobileSceneId = "a6bb88bbd16c48bca600330012bc9085";
+
+  // --- Device detection ---
+  function isMobileDevice() {
+    return window.innerWidth <= 768 || /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  // --- Pick scene based on device ---
+  const selectedSceneId = isMobileDevice() ? mobileSceneId : desktopSceneId;
+
   // --- Global defaults if a slide has no description ---
   const loop = false;      // don't loop by default
   const dwellMs = 3000;    // default time to wait on each slide (ms)
   const animMs = 2500;     // default camera flight duration (ms)
 
   const scene = new WebScene({
-    // your scene item
-    portalItem: { id: "b9d2c0e43f604f6daaaa29ffdeb71f32" }
+    portalItem: {
+      id: selectedSceneId
+    }
   });
 
   const view = new SceneView({
@@ -130,33 +143,6 @@ require([
     return scene.presentation.slides;
   }
 
-  function isMobileDevice() {
-  return window.innerWidth <= 768;
-}
-
-function getMobileScaleFactor() {
-  // Increase this if mobile is still too zoomed-in.
-  // 1.25 = slightly zoom out
-  // 1.5  = more zoom out
-  // 2.0  = strong zoom out
-  return 1.8;
-}
-
-async function adjustCameraForMobile() {
-  if (!isMobileDevice()) return;
-
-  const camera = view.camera.clone();
-  const factor = getMobileScaleFactor();
-
-  // Move camera higher / farther away.
-  // This helps layers appear closer to the desktop/tablet scale.
-  camera.position.z = camera.position.z * factor;
-
-  await view.goTo(camera, {
-    animate: false
-  });
-}
-
   async function playSlides() {
     const slides = await ensureSlidesReady();
 
@@ -169,29 +155,27 @@ async function adjustCameraForMobile() {
 
     if (i >= slides.length) i = 0;
 
-   while (playing && i < slides.length) {
-  const slide = slides.getItemAt(i);
+    while (playing && i < slides.length) {
+      const slide = slides.getItemAt(i);
 
-  const { dwell, anim } = parseTimingFromDesc(getDesc(slide));
+      const { dwell, anim } = parseTimingFromDesc(getDesc(slide));
 
-  const dwellForThisSlide = Number.isFinite(dwell) ? dwell : dwellMs;
-  const animForThisSlide = Number.isFinite(anim) ? anim : animMs;
+      const dwellForThisSlide = Number.isFinite(dwell) ? dwell : dwellMs;
+      const animForThisSlide = Number.isFinite(anim) ? anim : animMs;
 
-  await slide.applyTo(view, {
-    animate: true,
-    duration: animForThisSlide
-  });
+      // Apply slide directly.
+      // No extra mobile camera adjustment, so no jump.
+      await slide.applyTo(view, {
+        animate: true,
+        duration: animForThisSlide
+      });
 
-  // Important for mobile devices
-  await delay(300);
-await adjustCameraForMobile();
+      showMessage(getTitle(slide));
 
-  showMessage(getTitle(slide));
+      await delay(dwellForThisSlide);
 
-  await delay(dwellForThisSlide);
-
-  i++;
-}
+      i++;
+    }
 
     if (!loop && i >= slides.length) {
       playing = false;
