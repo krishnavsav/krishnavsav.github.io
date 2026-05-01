@@ -130,6 +130,33 @@ require([
     return scene.presentation.slides;
   }
 
+  function isMobileDevice() {
+  return window.innerWidth <= 768;
+}
+
+function getMobileScaleFactor() {
+  // Increase this if mobile is still too zoomed-in.
+  // 1.25 = slightly zoom out
+  // 1.5  = more zoom out
+  // 2.0  = strong zoom out
+  return 1.5;
+}
+
+async function adjustCameraForMobile() {
+  if (!isMobileDevice()) return;
+
+  const camera = view.camera.clone();
+  const factor = getMobileScaleFactor();
+
+  // Move camera higher / farther away.
+  // This helps layers appear closer to the desktop/tablet scale.
+  camera.position.z = camera.position.z * factor;
+
+  await view.goTo(camera, {
+    animate: false
+  });
+}
+
   async function playSlides() {
     const slides = await ensureSlidesReady();
 
@@ -142,29 +169,28 @@ require([
 
     if (i >= slides.length) i = 0;
 
-    while (playing && i < slides.length) {
-      const slide = slides.getItemAt(i);
+   while (playing && i < slides.length) {
+  const slide = slides.getItemAt(i);
 
-      // Read per-slide timing from Description
-      const { dwell, anim } = parseTimingFromDesc(getDesc(slide));
+  const { dwell, anim } = parseTimingFromDesc(getDesc(slide));
 
-      const dwellForThisSlide = Number.isFinite(dwell) ? dwell : dwellMs;
-      const animForThisSlide = Number.isFinite(anim) ? anim : animMs;
+  const dwellForThisSlide = Number.isFinite(dwell) ? dwell : dwellMs;
+  const animForThisSlide = Number.isFinite(anim) ? anim : animMs;
 
-      // fly the camera
-      await slide.applyTo(view, {
-        animate: true,
-        duration: animForThisSlide
-      });
+  await slide.applyTo(view, {
+    animate: true,
+    duration: animForThisSlide
+  });
 
-      // show only the TITLE
-      showMessage(getTitle(slide));
+  // Important for mobile devices
+  await adjustCameraForMobile();
 
-      // wait
-      await delay(dwellForThisSlide);
+  showMessage(getTitle(slide));
 
-      i++;
-    }
+  await delay(dwellForThisSlide);
+
+  i++;
+}
 
     if (!loop && i >= slides.length) {
       playing = false;
