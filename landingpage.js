@@ -139,7 +139,7 @@ function getMobileScaleFactor() {
   // 1.25 = slightly zoom out
   // 1.5  = more zoom out
   // 2.0  = strong zoom out
-  return 1.5;
+  return 1.8;
 }
 
 async function adjustCameraForMobile() {
@@ -183,7 +183,8 @@ async function adjustCameraForMobile() {
   });
 
   // Important for mobile devices
-  await adjustCameraForMobile();
+  await delay(300);
+await adjustCameraForMobile();
 
   showMessage(getTitle(slide));
 
